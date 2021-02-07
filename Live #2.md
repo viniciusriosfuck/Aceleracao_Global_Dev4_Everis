@@ -5,7 +5,7 @@
 **[MapReduce](https://pt.wikipedia.org/wiki/Hadoop)** Modelo de programação para processamento em larga escala. <br>
 **[Hadoop Docs](https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/FileSystemShell.html)** Comandos Shell. <br>
 
-* Big Data: petabye <br>
+* Big Data: petabyte <br>
 * distribuído, horizontal <br>
 * cluster: grupo computadores <br>
 * nó: computador <br>
