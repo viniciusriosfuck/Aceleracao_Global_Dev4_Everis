@@ -5,6 +5,28 @@
 **[MapReduce](https://pt.wikipedia.org/wiki/Hadoop)** Modelo de programação para processamento em larga escala. <br>
 **[Hadoop Docs](https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/FileSystemShell.html)** Comandos Shell. <br>
 
+* Big Data: petabye <br>
+* distribuído, horizontal <br>
+* cluster: grupo computadores <br>
+* nó: computador <br>
+* daemon: programa rodando em um nó <br>
+* Hadoop "SO de Big Data" <br>
+* processing: spark, mapreduce <br>
+* resource management: yarn <br>
+* storage: hdfs, blocos 128MB replicados 3x <br>
+* HDFS: Hadoop Distributed File System <br>
+* NameNode: index <br>
+* DataNode: armazena blocos arquivos <br>
+* Secondary NameNode: suporte <br>
+* YARN: Yet Another Resource Negotiator <br>
+* App: job submetido <br>
+* App Master: gerencia tarefas <br>
+* Container: unidade alocação <br>
+* Node Manager: monitoramento <br>
+* Resource Manager: gerenciador global <br>
+* MapReduce distribuído com HDFS: processamento nos servidores onde o dado está armazenado. <br>
+
+
 Profº [**Rodrigo Garcia**](https://www.linkedin.com/in/rodsantosg/) <br>
 
 ### 1 - Iniciar serviços do hadoop
