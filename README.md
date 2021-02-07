@@ -12,3 +12,18 @@
 [**Live #9** - Criando pipelines de dados eficientes - Parte 1](https://github.com/felipedoamarals/Aceleracao_Global_Dev4_Everis/blob/master/Live%20%239.md) <br>
 [**Live #10** - Criando pipelines de dados eficientes - Parte 2](https://github.com/felipedoamarals/Aceleracao_Global_Dev4_Everis/blob/master/Live%20%239.md) <br>
 [**Live #11** - Orquestrando Big Data em Ambiente de Nuvem](https://github.com/felipedoamarals/Aceleracao_Global_Dev4_Everis/blob/master/Live%20%2311.md) <br>
+
+
+Everis staff <br>
+* Ivan Brum, Diretor Data & Analytics: [LinkedIn](https://www.linkedin.com/in/ivan-brum-960358/) (Introdução) <br>
+* Heitor Zanfrili Abbruzzese, Manager Data Analitycs [LinkedIn](https://www.linkedin.com/in/heitor-zanfrili-abbruzzese-95086923/) (Introdução) <br>
+* Aline Sampaio, Analista de Recrutamento e Seleção [LinkedIn](https://www.linkedin.com/in/aline-sampaio-39bb3251/) (Introdução) <br>
+* Rodrigo Garcia, Big Data Projects Team Lead: [LinkedIn](https://www.linkedin.com/in/rodsantosg/) (HDFS, Yarn, Zookeper, Sqoop)<br>
+* Vinicius Manini Bueno, Data Engineer and Big Data solutions consultant: [LinkedIn](https://www.linkedin.com/in/vinicius-m-bueno-br/) (Hive, Impala)<br>
+* Valdir Sevaios, Data & Analytics: [LinkedIn](https://www.linkedin.com/in/valdir-novo-sevaios-junior-8190a096/) (noSQL, Cassandra, HBase)<br>
+* Hugo de Oliveira Alves, Expert Technology Architect: [LinkedIn](https://www.linkedin.com/in/huguinho/), [Github](https://github.com/huguinho-alves/python_aceleracao_everys)  (Python, Kafka, API_Restful) <br>
+* Ivan Pereira Falcão, Desenvolvedor Big Data: [LinkedIn](https://www.linkedin.com/in/ivanpfalcao/)  (Spark, Scala)<br>
+* Marco Antonio Pereira, Expert Data Architect: [LinkedIn](https://www.linkedin.com/in/marcoap/) (PySpark)<br>
+* Edmilson Carmo, Big Data Engineer: [LinkedIn](https://www.linkedin.com/in/edm-carmo/) (Big Data Cloud AWS)<br>
+* Evandro Armelin, Data & Analytics Director [LinkedIn](https://www.linkedin.com/in/evandroarmelin/) (Graduação) <br>
+* William Seles, IT Recruiter [LinkedIn](https://www.linkedin.com/in/william-seles-464351147/) (Graduação) <br>
