@@ -2,28 +2,64 @@
 
 **[Apache Hive](https://www.dezyre.com/article/impala-vs-hive-difference-between-sql-on-hadoop-components/180)** é uma infraestrutura de data warehouse construída sobre a plataforma Hadoop para realizar tarefas intensivas de dados, como consulta, análise, processamento e visualização. <br>
 **[Apache Impala](https://medium.com/@markuvinicius/deep-diving-into-hadoop-world-hive-e-impala-11b1dca716ba)** traz uma tecnologia de banco de dados paralela e escalável para o Hadoop, permitindo que os usuários emitam consultas SQL de baixa latência a dados armazenados no HDFS ou HBase sem necessidade de movimentar ou transformar os dados. <br>
+**[HDFS Shell](https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/FileSystemShell.html#copyToLocal)** <br>
+
+* Hive, Impala ~ SQL Big Data (MapReduce)
+* Hive (Facebook, intermediate queries, less memory), Impala (Cloudera, fast)
+* HDFS: folder=table (managed (default): drop HDFS, removes, só ali; external (metadata~pointer): drop HDFS, keeps)
+* Parquet (Cloudera,Twitter): compressed,column: Impala, Spark; Avro: Kafka; Orc: Hive
+* Snappy: compress codec
+
 
 Profº [**Vinicius Bueno**](https://www.linkedin.com/in/vinicius-m-bueno-br/) <br>
 
 ### 1 - Iniciando os serviços que serão utilizados
 ~~~shell
+
+# Download and move scripts to proper folder
+wget https://raw.githubusercontent.com/viniciusriosfuck/Aceleracao_Global_Dev4_Everis/master/script_apoio/restart_all_service_hive.sh
+mv restart_all_service_hive.sh script_apoio/
+wget https://raw.githubusercontent.com/viniciusriosfuck/Aceleracao_Global_Dev4_Everis/master/script_apoio/sqoop_import.sh
+mv sqoop_import.sh script_apoio/
+
+# Download used data files, first layer, raw data as strings, market proxy
+wget https://raw.githubusercontent.com/viniciusriosfuck/Aceleracao_Global_Dev4_Everis/master/arquivos_apoio/employees.csv
+wget https://raw.githubusercontent.com/viniciusriosfuck/Aceleracao_Global_Dev4_Everis/master/arquivos_apoio/base_localidade.csv
+
 #Utilizando script (restart_all_service_hive.sh)
 sh script_apoio/restart_all_service_hive.sh
+# Leave safe_mode
+sudo -u hdfs hdfs dfsadmin -safemode leave
+
 ~~~
 
 ### 2 - Acessando Hive e Impala
 ~~~shell
+#Impala
+impala-shell
+
+# to quit from the both
+quit;
+ctrl+c
+
 #Hive
 hive
 
-#Impala
-impala-shell
+#!: comando bash dentro do Hive/Impala (; at end of line)
+
 ~~~
 
 ### 3 - Manipulando bases de dados no Hive
 ~~~shell
+
 #Exibindo as bases de dados
 show databases;
+
+#Personalizando terminal para exibir banco que está sendo usado
+set hive.cli.print.current.db=true;
+
+#Exibindo as tabelas
+show tables;
 
 #Criando base de dados
 create database teste01;
@@ -34,37 +70,38 @@ create database if not exists teste01;
 #Acessando uma base de dados
 use teste01;
 
+#Exibindo as tabelas
+show tables;
+
 #Criando uma tabela
 ##Fora do banco de dados
 create table teste01.teste01 (id int);
+create table if not exists teste01.teste01 (id int);
 
 ##Usando o banco de dados
 create table teste02 (id int);
 
-#Exibindo as tabelas
-show tables;
-
-#Exindo informações de criação das tabelas
+#Exibindo informações de criação das tabelas
 show create table teste01;
  
 #Personalizando terminal para exibir o header
 set hive.cli.print.header=true;
 
-#Personalizando terminal para exibir banco que tá sendo usado
-set hive.cli.print.current.db=true;
-
 #Inserindo dados na tabela
 insert into table teste01 values(1);
 
-#Diretório default do Hive. Obs: Sair do Hive
-hdfs dfs -ls /user/hive/warehouse
+#Diretório default do Hive
+!hdfs dfs -ls /user/hive/warehouse;
 
-#Acessando arquivos no diretório default do hive. Obs: Sair do Hive
+#Acessando arquivos no diretório default do hive.
 ##Base de dados
-hdfs dfs -ls /user/hive/warehouse/teste01.db
+!hdfs dfs -ls /user/hive/warehouse/teste01.db;
 
-##Tabela. Obs: Sair do Hive
-hdfs dfs -ls /user/hive/warehouse/teste01.db/teste01
+##Tabela
+!hdfs dfs -ls /user/hive/warehouse/teste01.db/teste01;
+
+#Tabelas externas
+!hdfs dfs -ls /user/hive/warehouse/external/tabelas;
 
 #Criando tabela do tipo externa
 create external table teste03 (id int);
@@ -83,10 +120,12 @@ CREATE EXTERNAL TABLE TB_EXT_EMPLOYEE (
       TERMINATED BY '\;'
       STORED AS TEXTFILE
       LOCATION '/user/hive/warehouse/external/tabelas/employee'
-      tblproperties ("skip.header.line.count"="1"); 
+      tblproperties ("skip.header.line.count"="1");
       
 #Carregando base de dados em arquivo para o HDFS usando -PUT
-hdfs dfs -put /home/everis/employee.txt /user/hive/warehouse/external/tabelas/employee
+!hdfs dfs -put /home/everis/employees.csv /user/hive/warehouse/external/tabelas/employee;
+!hdfs dfs -put -f /home/everis/employees.csv /user/hive/warehouse/external/tabelas/employee;
+#-f: if not exists (overwrite)
 
 #Criando tabela formatada
 CREATE TABLE TB_EMPLOYEE(
@@ -95,34 +134,37 @@ CREATE TABLE TB_EMPLOYEE(
       age INT,
       active_lifestyle STRING,
       salary DOUBLE)
-      PARTITIONED BY (dt_processamento STRING) #Coluna do tipo partição.
+      PARTITIONED BY (dt_processamento STRING)
       ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
-      STORED AS PARQUET TBLPROPERTIES ("parquet.compression"="SNAPPY"); #Armazenando em formato parquet Snappy
+      STORED AS PARQUET TBLPROPERTIES ("parquet.compression"="SNAPPY");
+#Coluna do tipo partição.
+#Armazenando em formato parquet Snappy
       
 #Inserindo dados de outra tabela na tabela formatada
-insert into table TB_EMPLOYEE partition (dt_processamento='20201118')
+INSERT INTO TABLE TB_EMPLOYEE partition (dt_processamento='20201118')
       select 
       id,
       groups,
       age,
       active_lifestyle,
       salary
-      from TB_EXT_EMPLOYEE;
+      FROM TB_EXT_EMPLOYEE;
 ~~~
 
 5 - Visualizando arquivo do tipo parquet
 ~~~shell
 #Copiar arquivo para o disco local
-hdfs dfs -copyToLocal /user/hive/warehouse/teste01.db/tb_employee/dt_processamento=20201118/000000_0 .
+!rm 000000_0;
+!hdfs dfs -copyToLocal /user/hive/warehouse/teste01.db/tb_employee/dt_processamento=20201118/000000_0 .;
 
 #Visualizar info do schema utilizando o parquet-tools
-parquet-tools schema 000000_0
+!parquet-tools schema 000000_0;
 ~~~
 
 6 - Ingestão de base de dados II
 ~~~shell
 #Criando tabela
-create external table localidade(
+CREATE EXTERNAL TABLE localidade(
       street string,
       city string,
       zip string,
@@ -143,19 +185,21 @@ create external table localidade(
       
 #Carga na tabela pelo Hive
 load data local inpath '/home/everis/base_localidade.csv'
-into table teste01.localidade partition (particao='2021-01-21');
+      INTO TABLE teste01.localidade partition (particao='2021-01-21');
 
-#Visuliando dados da tabela no Hive
-select * from localidade;
+#Visualizando dados da tabela no Hive
+SELECT * FROM localidade LIMIT 10;
 
 #Visualizando arquivo no HDFS
-hdfs dfs -ls /user/hive/warehouse/external/tabelas/localidade/particao=2021-01-21
+!hdfs dfs -ls /user/hive/warehouse/external/tabelas/localidade/particao=2021-01-21;
 
-#Visulizando conteúdo do arquivo no HDFS
-hdfs dfs -cat /user/hive/warehouse/external/tabelas/localidade/particao=2021-01-21/base_localidade.csv
+#Visualizando conteúdo do arquivo no HDFS
+!hdfs dfs -cat /user/hive/warehouse/external/tabelas/localidade/particao=2021-01-21/base_localidade.csv;
+!clear;
+ctrl+L (clears terminal)
 
 #Criando tabela formatada
-create table tb_localidade_parquet(
+CREATE TABLE tb_localidade_parquet(
       street string,
       city string,
       zip string,
@@ -172,7 +216,7 @@ create table tb_localidade_parquet(
       STORED AS PARQUET;
 
 #Inserindo dados via partição na tabela formatada
-INSERT into TABLE tb_localidade_parquet
+INSERT INTO TABLE tb_localidade_parquet
       PARTITION(PARTICAO='01')
       SELECT
       street,
@@ -187,7 +231,28 @@ INSERT into TABLE tb_localidade_parquet
       price,
       latitude,
       longitude
-      FROM localidade;
+      FROM localidade;  
+	  
+#Exemplo sem relação com as tabelas disponíveis durante a aula
+SELECT
+      tab01.id,
+      tab02.zip
+      FROM tb_ext_employee tab01
+      FULL OUTER JOIN tb_localidade_parquet tab02
+      ON tab01.id = tab02.zip;
+
+#Select com coluna com agrupamento de informações
+SELECT
+      tab01.id,
+      tab02.zip,
+      "teste" col_fixa,
+      concat(tab01.id, tab02.zip) AS col_concatenada
+      FROM tb_ext_employee tab01
+      FULL OUTER JOIN tb_localidade_parquet tab02
+      ON tab01.id = tab02.zip;
+
+# Leave hive
+ctrl+c or quit;
 ~~~
 
 7 - Impala
@@ -196,33 +261,21 @@ INSERT into TABLE tb_localidade_parquet
 impala-shell
 
 #Exibindo bases de dados;
-show databases;
+SHOW databases;
+
+#Exibindo bases de dados;
+SHOW tables;
 
 #Atualizando bases de dados. Necessário atualizar o metastore com a base de dados e tabela que deseja invalidar.
 INVALIDATE METADATA teste01.tb_localidade_parquet;
+INVALIDATE METADATA teste01.tb_ext_employee;
+
+# Query
+SELECT * FROM teste01.tb_ext_employee LIMIT 10;
 ~~~
 
-8 - Relacionamento entre tabelas no Hive
-~~~shell
-#Exemplo sem relação com as tabelas disponíveis durante a aula
-select
-      tab01.id,
-      tab02.zip
-      from tb_ext_employee tab01
-      full outer join tb_localidade_parquet tab02
-      on tab01.id = tab02.zip;
-
-#Select com coluna com agrupamento de informações
-select
-      tab01.id,
-      tab02.zip,
-      "teste" col_fixa,
-      concat(tab01.id, tab02.zip) as col_concatenada
-      from tb_ext_employee tab01
-      full outer join tb_localidade_parquet tab02
-      on tab01.id = tab02.zip;
-~~~
-### Exemplo de Script 
+### Exemplo de Script
+(TODO): see how to adapt this script
 ~~~shell
 #!/bin/bash
 
@@ -249,25 +302,32 @@ LOAD DATA LOCAL INPATH '${hiveconf:path_file}' INTO TABLE ${hiveconf:table} PART
 
 ### Comandos adicionais
 ~~~shell
-#Desabilitar Safe Mode no Hive
-sudo -u hdfs hadoop dfsadmin -safemode leave
-
 #Acessar informações de comandos do Hadoop
 hadoop -h
 
 #Acessar manual do Hadoop
 man hadoop
 
-#Acessar informações de comandos do HDFS
-hdfs -h
-
 #Acessar manual do HDFS
 man hdfs
 
+#Acessar informações de comandos do HDFS
+hdfs -h
+
+#Acessar informações de comandos do HIVE
+hive -h
+
 #Exemplo de execução do Hive sem acessá-lo
-hive -S -e "select count(*) from teste01.localidade;"
+hive -S -e "SELECT COUNT(*) FROM teste01.localidade;"
+# -S: silent mode
+# -e: SQL
+
+# fix backspace key issue (when press backspace key print ^H in the terminal)
+stty erase ^H
+# https://unix.stackexchange.com/questions/43103/backspace-tab-not-working-in-terminal-using-ssh
+
 ~~~
 
 ### Material
 [Máquina Virtual utilizada](https://hermes.digitalinnovation.one/files/acceleration/Everis_BigData-v3.ova) <br>
-[Slide da aula*]() *slide não disponível até o momento
+[Slide da aula](https://drive.google.com/file/d/1duwf7g9lfAsIOJWRL26tx8RBfV8ySPon/view?usp=sharing) <br>
