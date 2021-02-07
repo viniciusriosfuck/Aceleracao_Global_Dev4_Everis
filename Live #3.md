@@ -77,6 +77,7 @@ sqoop-version
 ### 3 - Criando base de dados de exemplo no Mysql
 ~~~shell
 # Foi utilizado uma base do Pokemon. Base disponível no arquivo pokemon.sql
+wget https://raw.githubusercontent.com/viniciusriosfuck/Aceleracao_Global_Dev4_Everis/master/arquivos_apoio/pokemon.sql
 mysql -u root -h localhost -pEveris@2021 < pokemon.sql
 ~~~
 
@@ -107,6 +108,17 @@ hdfs dfs -text /user/everis-bigdata/pokemon/part-m-00000.gz | more
 
 ### 7 - Atividades
 ~~~shell
+
+# mysql
+# Abre mysql
+mysql -u root -h localhost -pEveris@2021
+SELECT Number, Name, Legendary FROM trainning.pokemon WHERE Legendary IS true; #65
+SELECT Number, Name, Type1, Type2 FROM trainning.pokemon WHERE Type2 = ""; #386
+SELECT Number, Name, Speed FROM trainning.pokemon ORDER BY speed DESC LIMIT 10;
+SELECT Number, Name, hp FROM trainning.pokemon ORDER BY hp LIMIT 50;
+SELECT Number, Name, SUM(HP+Attack+Defense+SpAtk+SpDef+Speed) AS Total FROM trainning.pokemon GROUP BY Number ORDER BY Total DESC LIMIT 100;
+quit
+
 #1 - Todos os Pokemons lendários;
 sudo -u hdfs sqoop import \ # Utilizando o usuário HDFS
 --connect jdbc:mysql://localhost/trainning \ # String de conexão
@@ -116,96 +128,158 @@ sudo -u hdfs sqoop import \ # Utilizando o usuário HDFS
 --target-dir /user/everis-bigdata/pokemon/1 \ # Onde será salvo
 --where "Legendary=1" # Condição
 
-# Resultado:
-#65 Pokemons Lendários
+# mysql
+SELECT Number, Name, Legendary FROM trainning.pokemon WHERE Legendary IS true; #65
++--------+---------------------------+-----------+
+| Number | Name                      | Legendary |
++--------+---------------------------+-----------+
+|    157 | Articuno                  |         1 |
+|    158 | Zapdos                    |         1 |
+|    159 | Moltres                   |         1 |
+|    163 | Mewtwo                    |         1 |
+|    164 | Mega Mewtwo X             |         1 |
+|    165 | Mega Mewtwo Y             |         1 |
+|    263 | Raikou                    |         1 |
+65 rows in set (0.00 sec)
+
+# hdfs
+sudo -u hdfs sqoop import \
+--connect jdbc:mysql://localhost/trainning \
+--username root --password "Everis@2021" \
+--target-dir /user/everis-bigdata/pokemon/1 \
+--direct \
+--table pokemon \
+--where "Legendary=1"
+
+hdfs dfs -text /user/everis-bigdata/pokemon/1/*
+# 157,Articuno,Ice,Flying,90,85,100,95,125,85,1,1
+# 158,Zapdos,Electric,Flying,90,90,85,125,90,100,1,1
+# 159,Moltres,Fire,Flying,90,100,90,125,85,90,1,1
+# 163,Mewtwo,Psychic,,106,110,90,154,90,130,1,1
+
+# número de linhas: 65
+hdfs dfs -cat /user/everis-bigdata/pokemon/1/* |wc -l
 
 #2 - Todos os Pokemons de apenas um tipo;
+# mysql
+SELECT Number, Name, Type1, Type2 FROM trainning.pokemon WHERE Type1 = "";
+# Empty set
+SELECT Number, Name, Type1, Type2 FROM trainning.pokemon WHERE Type2 = ""; #386
++--------+--------------------------+----------+-------+
+| Number | Name                     | Type1    | Type2 |
++--------+--------------------------+----------+-------+
+|      5 | Charmander               | Fire     |       |
+|      6 | Charmeleon               | Fire     |       |
+|     10 | Squirtle                 | Water    |       |
+|     11 | Wartortle                | Water    |       |
+|     12 | Blastoise                | Water    |       |
+|     13 | Mega Blastoise           | Water    |       |
+|     14 | Caterpie                 | Bug      |       |
+|     15 | Metapod                  | Bug      |       |
+|     25 | Rattata                  | Normal   |       |
+386 rows in set (0.00 sec)
+
+#hdfs
 sudo -u hdfs sqoop import \
 --connect jdbc:mysql://localhost/trainning \
 --username root --password "Everis@2021" \
 --direct \
 --table pokemon \
---target-dir /user/everis-bigdata/pokemon/2 \ 
---where "(Type1 <> '' AND Type2 = '') OR (Type2 <> '' AND Type2 = '')"
-
-#Resultado da Query
-#SELECT * FROM trainning.pokemon where (Type1 <> '' AND Type2 = '') OR (Type2 <> '' AND Type2 = '');
-#386 rows in set (0.01 sec)
-#Resultado
-#INFO mapreduce.ImportJobBase: Retrieved 386 records.
-
-sudo -u hdfs sqoop import \
---connect jdbc:mysql://localhost/trainning \
---username root --password "Everis@2021" \
---fields-terminated-by "|" \
---split-by 1 \
 --target-dir /user/everis-bigdata/pokemon/2 \
---query "SELECT * FROM pokemon WHERE \$CONDITIONS (Type1 <> '' AND Type2 = '') OR (Type2 <> '' AND Type2 = '')"
+--where "Type2=''"
+
+hdfs dfs -text /user/everis-bigdata/pokemon/2/*
+5,Charmander,Fire,,39,52,43,60,50,65,1,0
+6,Charmeleon,Fire,,58,64,58,80,65,80,1,0
+10,Squirtle,Water,,44,48,65,50,64,43,1,0
+11,Wartortle,Water,,59,63,80,65,80,58,1,0
+12,Blastoise,Water,,79,83,100,85,105,78,1,0
+13,Mega Blastoise,Water,,79,103,120,135,115,78,1,0
+14,Caterpie,Bug,,45,30,35,20,20,45,1,0
+15,Metapod,Bug,,50,20,55,25,25,30,1,0
+25,Rattata,Normal,,30,56,35,25,35,72,1,0
+
+# número de linhas: 386
+hdfs dfs -cat /user/everis-bigdata/pokemon/2/* |wc -l
 
 #3 - Os top 10 Pokemons mais rápidos;
+# mysql
+SELECT Number, Name, Speed FROM trainning.pokemon ORDER BY speed DESC LIMIT 10;
++--------+---------------------+-------+
+| Number | Name                | speed |
++--------+---------------------+-------+
+|    432 | Deoxys Speed Forme  |   180 |
+|    316 | Ninjask             |   160 |
+|    430 | DeoxysAttack Forme  |   150 |
+|    155 | Mega Aerodactyl     |   150 |
+|    429 | Deoxys Normal Forme |   150 |
+|     72 | Mega Alakazam       |   150 |
+|    276 | Mega Sceptile       |   145 |
+|     20 | Mega Beedrill       |   145 |
+|    679 | Accelgor            |   145 |
+|    110 | Electrode           |   140 |
++--------+---------------------+-------+
+
+#hdfs
 sudo -u hdfs sqoop import \
 --connect jdbc:mysql://localhost/trainning \
 --username root --password "Everis@2021" \
 --fields-terminated-by "|" \
 --split-by 1 \
 --target-dir /user/everis-bigdata/pokemon/3 \
---query 'SELECT * FROM pokemon WHERE $CONDITIONS ORDER BY SPEED DESC LIMIT 10' 
+--query 'SELECT Number, Name, Speed FROM pokemon WHERE $CONDITIONS ORDER BY SPEED DESC LIMIT 10' 
 
-# Resultado da Query
-#SELECT * FROM trainning.pokemon ORDER BY SPEED DESC LIMIT 10;
-#+--------+---------------------+----------+--------+------+--------+---------+-------+-------+-------+------------+-----------+
-#| Number | Name                | Type1    | Type2  | HP   | Attack | Defense | SpAtk | SpDef | Speed | Generation | Legendary |
-#+--------+---------------------+----------+--------+------+--------+---------+-------+-------+-------+------------+-----------+
-#|    432 | Deoxys Speed Forme  | Psychic  |        |   50 |     95 |      90 |    95 |    90 |   180 |          3 |         1 |
-#|    316 | Ninjask             | Bug      | Flying |   61 |     90 |      45 |    50 |    50 |   160 |          3 |         0 |
-#|    430 | DeoxysAttack Forme  | Psychic  |        |   50 |    180 |      20 |   180 |    20 |   150 |          3 |         1 |
-#|    155 | Mega Aerodactyl     | Rock     | Flying |   80 |    135 |      85 |    70 |    95 |   150 |          1 |         0 |
-#|    429 | Deoxys Normal Forme | Psychic  |        |   50 |    150 |      50 |   150 |    50 |   150 |          3 |         1 |
-#|     72 | Mega Alakazam       | Psychic  |        |   55 |     50 |      65 |   175 |    95 |   150 |          1 |         0 |
-#|    276 | Mega Sceptile       | Grass    | Dragon |   70 |    110 |      75 |   145 |    85 |   145 |          3 |         0 |
-#|     20 | Mega Beedrill       | Bug      | Poison |   65 |    150 |      40 |    15 |    80 |   145 |          1 |         0 |
-#|    679 | Accelgor            | Bug      |        |   80 |     70 |      40 |   100 |    60 |   145 |          5 |         0 |
-#|    110 | Electrode           | Electric |        |   60 |     50 |      70 |    80 |    80 |   140 |          1 |         0 |
-#+--------+---------------------+----------+--------+------+--------+---------+-------+-------+-------+------------+-----------+
-#10 rows in set (0.00 sec)
-
-# Resultado
-#432|Deoxys Speed Forme|Psychic||50|95|90|95|90|180|3|true
-#316|Ninjask|Bug|Flying|61|90|45|50|50|160|3|false
-#430|DeoxysAttack Forme|Psychic||50|180|20|180|20|150|3|true
-#155|Mega Aerodactyl|Rock|Flying|80|135|85|70|95|150|1|false
-#429|Deoxys Normal Forme|Psychic||50|150|50|150|50|150|3|true
-#72|Mega Alakazam|Psychic||55|50|65|175|95|150|1|false
-#276|Mega Sceptile|Grass|Dragon|70|110|75|145|85|145|3|false
-#20|Mega Beedrill|Bug|Poison|65|150|40|15|80|145|1|false
-#679|Accelgor|Bug||80|70|40|100|60|145|5|false
-#110|Electrode|Electric||60|50|70|80|80|140|1|false
+hdfs dfs -text /user/everis-bigdata/pokemon/3/*
+#432|Deoxys Speed Forme|180
+#316|Ninjask|160
+#430|DeoxysAttack Forme|150
+#155|Mega Aerodactyl|150
+#429|Deoxys Normal Forme|150
+#72|Mega Alakazam|150
+#276|Mega Sceptile|145
+#20|Mega Beedrill|145
+#679|Accelgor|145
+#110|Electrode|140
 
 #4 - Os top 50 Pokemons com menos HP;
+# mysql
+SELECT Number, Name, hp FROM trainning.pokemon ORDER BY hp LIMIT 50;
++--------+------------+------+
+| Number | Name       | hp   |
++--------+------------+------+
+|    317 | Shedinja   |    1 |
+|     56 | Diglett    |   10 |
+|    187 | Pichu      |   20 |
+|    389 | Duskull    |   20 |
+|    140 | Magikarp   |   20 |
+|    488 | Mime Jr.   |   20 |
+|    382 | Feebas     |   20 |
+|    231 | Shuckle    |   20 |
+|     69 | Abra       |   25 |
+|     89 | Magnemite  |   25 |
+|    304 | Ralts      |   28 |
+
+# hdfs
 sudo -u hdfs sqoop import \
 --connect jdbc:mysql://localhost/trainning \
 --username root --password "Everis@2021" \
 --fields-terminated-by "|" \
 --split-by 1 \
 --target-dir /user/everis-bigdata/pokemon/4 \
---query 'SELECT * FROM pokemon WHERE $CONDITIONS ORDER BY HP ASC LIMIT 50' 
+--query 'SELECT Number, Name, hp FROM pokemon WHERE $CONDITIONS ORDER BY HP ASC LIMIT 50' 
 
-# Query
-# SELECT * FROM trainning.pokemon ORDER BY HP ASC LIMIT 50; Exibi somente as 4 primeiras linha apenas
-#+--------+------------+----------+---------+------+--------+---------+-------+-------+-------+------------+-----------+
-#| Number | Name       | Type1    | Type2   | HP   | Attack | Defense | SpAtk | SpDef | Speed | Generation | Legendary |
-#+--------+------------+----------+---------+------+--------+---------+-------+-------+-------+------------+-----------+
-#|    317 | Shedinja   | Bug      | Ghost   |    1 |     90 |      45 |    30 |    30 |    40 |          3 |         0 |
-#|     56 | Diglett    | Ground   |         |   10 |     55 |      25 |    35 |    45 |    95 |          1 |         0 |
-#|    187 | Pichu      | Electric |         |   20 |     40 |      15 |    35 |    35 |    60 |          2 |         0 |
-#|    389 | Duskull    | Ghost    |         |   20 |     40 |      90 |    30 |    90 |    25 |          3 |         0 |
-
-#Resultado
-#INFO mapreduce.ImportJobBase: Retrieved 50 records.
-#317|Shedinja|Bug|Ghost|1|90|45|30|30|40|3|false
-#56|Diglett|Ground||10|55|25|35|45|95|1|false
-#187|Pichu|Electric||20|40|15|35|35|60|2|false
-#389|Duskull|Ghost||20|40|90|30|90|25|3|false
+hdfs dfs -text /user/everis-bigdata/pokemon/4/*
+#317|Shedinja|1
+#56|Diglett|10
+#187|Pichu|20
+#389|Duskull|20
+#140|Magikarp|20
+#488|Mime Jr.|20
+#382|Feebas|20
+#231|Shuckle|20
+#69|Abra|25
+#89|Magnemite|25
+#304|Ralts|28
 
 #5 - Os top 100 Pokemon com maiores atributos
 sudo -u hdfs sqoop import \
@@ -216,21 +290,32 @@ sudo -u hdfs sqoop import \
 --target-dir /user/everis-bigdata/pokemon/5 \
 --query 'SELECT Number, Name, SUM(HP+Attack+Defense+SpAtk+SpDef+Speed) AS Total FROM pokemon WHERE $CONDITIONS GROUP BY Number ORDER BY Total DESC LIMIT 100' 
 
-# Query | Exibi apenas as 4 primeiras linhas
-# SELECT Number, Name, SUM(HP+Attack+Defense+SpAtk+SpDef+Speed) AS Total FROM trainning.pokemon GROUP BY Number ORDER BY Total DESC LIMIT 100;
-#+--------+--------------------------+-------+
-#| Number | Name                     | Total |
-#+--------+--------------------------+-------+
-#|    164 | Mega Mewtwo X            |   780 |
-#|    427 | Mega Rayquaza            |   780 |
-#|    165 | Mega Mewtwo Y            |   780 |
-#|    425 | Primal Groudon           |   770 |
+SELECT Number, Name, SUM(HP+Attack+Defense+SpAtk+SpDef+Speed) AS Total FROM trainning.pokemon GROUP BY Number ORDER BY Total DESC LIMIT 100;
++--------+---------------------------+-------+
+| Number | Name                      | Total |
++--------+---------------------------+-------+
+|    165 | Mega Mewtwo Y             |   780 |
+|    164 | Mega Mewtwo X             |   780 |
+|    427 | Mega Rayquaza             |   780 |
+|    423 | Primal Kyogre             |   770 |
+|    425 | Primal Groudon            |   770 |
+|    553 | Arceus                    |   720 |
 
-# Resultado
-#164|Mega Mewtwo X|780
-#427|Mega Rayquaza|780
-#165|Mega Mewtwo Y|780
-#425|Primal Groudon|770
+hdfs dfs -text /user/everis-bigdata/pokemon/5/*
+#165,Mega Mewtwo Y,780
+#164,Mega Mewtwo X,780
+#427,Mega Rayquaza,780
+#425,Primal Groudon,770
+#423,Primal Kyogre,770
+#553,Arceus,720
+
+# cria txt local com query
+hdfs dfs -text /user/everis-bigdata/pokemon/1/* > lendarios.txt
+hdfs dfs -text /user/everis-bigdata/pokemon/2/* > tipoUnico.txt
+hdfs dfs -text /user/everis-bigdata/pokemon/3/* > maisRapido10.txt
+hdfs dfs -text /user/everis-bigdata/pokemon/4/* > menosHP50.txt
+hdfs dfs -text /user/everis-bigdata/pokemon/5/* > maiorAtributo100.txt
+
 ~~~
 
 ### Adicionais
@@ -247,4 +332,5 @@ hdfs dfs -cat /user/everis-bigdata/pokemon/1/* |wc -l
 
 ### Material
 [Máquina Virtual utilizada](https://hermes.digitalinnovation.one/files/acceleration/Everis_BigData-v3.ova) <br>
-[Slide da aula](https://drive.google.com/file/d/1ZN53soEHPYiRS1hCtEN3L3lYSnuCZH9-/view)
+[Slide da aula](https://drive.google.com/file/d/1ZN53soEHPYiRS1hCtEN3L3lYSnuCZH9-/view) <br>
+[Dataset Kaggle](https://www.kaggle.com/abcsds/pokemon)
