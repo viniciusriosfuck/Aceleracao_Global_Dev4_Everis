@@ -4,6 +4,9 @@
 **[Yarn](https://pt.wikipedia.org/wiki/Hadoop)** é uma plataforma do ecossistema Hadoop para gerenciamento de recursos responsável pelo gerenciamento dos recursos computacionais em cluster, assim como pelo agendamento dos recursos. <br>
 **[Sqoop](https://www.cetax.com.br/apache-hadoop-tudo-o-que-voce-precisa-saber/)** é um projeto do ecossistema Hadoop, cuja responsabilidade é importar e exportar dados do banco de dados relacionais. <br>
 
+* Zookeeper: coordenação distribuído, nós (hosts), rotas, ~DNS; Leader, Followers <br>
+* Sqoop: RDBS <-> HDFS (csv) <br>
+
 Profº [**Rodrigo Garcia**](https://www.linkedin.com/in/rodsantosg/) <br>
 
 ### 1 - Alguns exemplos:
@@ -15,7 +18,7 @@ sqoop import \
 --password sqoop \
 --table cities
 --warehouse-dir /etl/input/ # Pemite especificar um diretório no HDFS como destino
---where "country = 'Brazil'" # Pa importar apenas um subconjunto de registros de uma tabela
+--where "country = 'Brazil'" # Para importar apenas um subconjunto de registros de uma tabela
 -P ou --password-file my-sqoop-password
 --as-sequencefile ou --as-avrodatafile # Para escrever o arquivo no HDFS em formato binário (Sequence ou Avro)
 --compress # Comprime os blocos antes de gravar no HDFS em formato gzip por padrão
