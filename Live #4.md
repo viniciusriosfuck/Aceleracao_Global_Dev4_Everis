@@ -315,7 +315,7 @@ man hdfs
 hdfs -h
 
 #Acessar informações de comandos do HIVE
-hive -h
+hive -H
 
 #Exemplo de execução do Hive sem acessá-lo
 hive -S -e "SELECT COUNT(*) FROM teste01.localidade;"
