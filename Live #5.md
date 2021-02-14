@@ -548,7 +548,7 @@ get 'cidade', '1'
 ~~~shell
 put 'cidade', '1', 'responsaveis:prefeitonome', 'Guilherme Boulos'
 put 'cidade', '1', 'responsaveis:viceprefeitonome', 'Luiza Erundina'
-put 'cidade', '26', 'responsaveis:prefeitopossedata', '01/01/2025'
+put 'cidade', '1', 'responsaveis:prefeitopossedata', '01/01/2025'
 ~~~
    
 7. Consulte os dados da cidade alterada.
@@ -563,6 +563,8 @@ get 'cidade', '1', {COLUMNS=>['responsaveis'],VERSIONS=>5}
 
 9. Exclua as três cidades com menor quantidade de habitantes e quantidade de eleitores.
 ~~~shell
+#TODO check how do select min inside hbase
+
 g = scan 'cidade', 'estatisticas:eleitoresquantidade', {FILTER => MIN, LIMIT 3}
 
 delete 'cidade', '1', 'estatisticas:eleitoresquantidade'
@@ -576,6 +578,7 @@ scan 'cidade'
     
 11. Adicione na ColumnFamily “estatísticas”, duas novas colunas de “quantidade de partidos políticos” e “Valor em Reais à partidos” para as 2 cidades mais populosas cadastradas.
 ~~~shell
+#TODO check how do select max inside hbase
 put 'cidade', '1', 'responsaveis:qtdepartidos', '33'
 put 'cidade', '1', 'responsaveis:repassepartidos', '100000000'
 ~~~
